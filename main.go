@@ -2,15 +2,22 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
+type Resource struct {
+	Id int
+}
+
+func (r Resource) Close() {
+	fmt.Printf("Closing %v\n", r)
+}
+
 func main() {
-	var name string
-	if len(os.Args) > 1 {
-		name = os.Args[1]
-	} else {
-		name = "World"
-	}
-	fmt.Printf("Hello, %s!", name)
+	var r *Resource
+	defer func() {
+		if r != nil {
+			r.Close()
+		}
+	}()
+	r = &Resource{42}
 }
