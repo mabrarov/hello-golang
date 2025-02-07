@@ -6,12 +6,20 @@ import (
 	"os"
 )
 
-type CloseError struct {
-	ErrorDescription string
+type BasicError struct {
+	Description string
 }
 
-func (e CloseError) Error() string {
-	return e.ErrorDescription
+type CloseError struct {
+	BasicError
+}
+
+type ProcessError struct {
+	BasicError
+}
+
+func (e BasicError) Error() string {
+	return e.Description
 }
 
 type Resource struct {
@@ -21,35 +29,75 @@ type Resource struct {
 func (r Resource) Close() error {
 	_, err := fmt.Printf("Closing %v\n", r)
 	if err != nil {
-		return CloseError{"Close error: " + err.Error()}
+		return CloseError{BasicError{"Close error: " + err.Error()}}
 	}
 	if rand.Intn(2) > 0 {
-		return CloseError{"Random close error"}
+		return CloseError{BasicError{"Random close error"}}
 	}
 	return nil
 }
 
-func main() {
+func process(resource Resource) (int, error) {
+	_, err := fmt.Printf("Created %v\n", resource)
+	if err != nil {
+		return 0, err
+	}
+	switch rand.Intn(3) {
+	case 1:
+		return 0, ProcessError{BasicError{"Random process error"}}
+	case 2:
+		panic("Random panic")
+	default:
+		return resource.Id, nil
+	}
+}
+
+func work() (result int, errs []error) {
 	// Create guard
 	var guard *Resource
 	defer func() {
-		if guard != nil {
-			// No way to handle closing error :(
-			_ = guard.Close()
+		if guard == nil {
+			return
+		}
+		err := guard.Close()
+		if err != nil {
+			errs = append(errs, err)
 		}
 	}()
+
 	// Create resource and immediately protect it with guard
 	resource := Resource{42}
 	guard = &resource
-	// Some usage of resource goes here
-	fmt.Printf("Created %v\n", resource)
-	//panic("An error happened")
-	// Normal closing of resource with immediate un-protection
-	err := resource.Close()
-	guard = nil
-	// Handling error during resource closing
+
+	// Process / use resource and generate result
+	result, err := process(resource)
 	if err != nil {
-		fmt.Printf("Error during closing %v: %s\n", resource, err.Error())
+		errs = append(errs, err)
+	}
+
+	// Normal closing of resource with immediate un-protection
+	err = resource.Close()
+	guard = nil
+
+	// Return results
+	if err != nil {
+		errs = append(errs, err)
+	}
+	return
+}
+
+func report(errs []error) {
+	fmt.Println("Errors happened:")
+	for _, err := range errs {
+		fmt.Println("\t" + err.Error())
+	}
+}
+
+func main() {
+	result, errs := work()
+	fmt.Printf("Result: %v\n", result)
+	if len(errs) > 0 {
+		report(errs)
 		os.Exit(1)
 	}
 }
