@@ -1,38 +1,30 @@
 package main
 
 import (
-	"io"
-	"os"
-	"strings"
+	"golang.org/x/tour/pic"
+	"image"
+	"image/color"
+	"math"
 )
 
-type rot13Reader struct {
-	r io.Reader
+type Image struct {
+	W, H int
 }
 
-const encoded = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
-
-func encodeRot13(v byte) byte {
-	switch {
-	case v >= 'A' && v <= 'Z':
-		return encoded[v-'A']
-	case v >= 'a' && v <= 'z':
-		return encoded[v-'a']
-	default:
-		return v
-	}
+func (i Image) ColorModel() color.Model {
+	return color.RGBAModel
 }
 
-func (rot *rot13Reader) Read(buf []byte) (n int, err error) {
-	n, err = rot.r.Read(buf)
-	for i := 0; i < n; i++ {
-		buf[i] = encodeRot13(buf[i])
-	}
-	return
+func (i Image) Bounds() image.Rectangle {
+	return image.Rect(0, 0, i.W, i.H)
+}
+
+func (i Image) At(x, y int) color.Color {
+	v := uint8((x + y) % math.MaxUint8)
+	return color.RGBA{R: v, G: v, B: 255, A: 255}
 }
 
 func main() {
-	s := strings.NewReader("Lbh penpxrq gur pbqr!")
-	r := rot13Reader{s}
-	_, _ = io.Copy(os.Stdout, &r)
+	m := Image{10, 10}
+	pic.ShowImage(m)
 }
