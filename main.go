@@ -1,21 +1,17 @@
 package main
 
-import (
-	"fmt"
-	"io"
-	"strings"
-)
+import "golang.org/x/tour/reader"
+
+type MyReader struct{}
+
+func (r MyReader) Read(buf []byte) (int, error) {
+	bufSize := len(buf)
+	for i := 0; i < bufSize; i++ {
+		buf[i] = 'A'
+	}
+	return bufSize, nil
+}
 
 func main() {
-	r := strings.NewReader("Hello, Reader!")
-
-	b := make([]byte, 8)
-	for {
-		n, err := r.Read(b)
-		fmt.Printf("n = %v err = %v b = %v\n", n, err, b)
-		fmt.Printf("b[:n] = %q\n", b[:n])
-		if err == io.EOF {
-			break
-		}
-	}
+	reader.Validate(MyReader{})
 }
