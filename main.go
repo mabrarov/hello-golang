@@ -1,17 +1,38 @@
 package main
 
-import "golang.org/x/tour/reader"
+import (
+	"io"
+	"os"
+	"strings"
+)
 
-type MyReader struct{}
+type rot13Reader struct {
+	r io.Reader
+}
 
-func (r MyReader) Read(buf []byte) (int, error) {
-	bufSize := len(buf)
-	for i := 0; i < bufSize; i++ {
-		buf[i] = 'A'
+const encoded = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
+
+func encodeRot13(v byte) byte {
+	switch {
+	case v >= 'A' && v <= 'Z':
+		return encoded[v-'A']
+	case v >= 'a' && v <= 'z':
+		return encoded[v-'a']
+	default:
+		return v
 	}
-	return bufSize, nil
+}
+
+func (rot *rot13Reader) Read(buf []byte) (n int, err error) {
+	n, err = rot.r.Read(buf)
+	for i := 0; i < n; i++ {
+		buf[i] = encodeRot13(buf[i])
+	}
+	return
 }
 
 func main() {
-	reader.Validate(MyReader{})
+	s := strings.NewReader("Lbh penpxrq gur pbqr!")
+	r := rot13Reader{s}
+	_, _ = io.Copy(os.Stdout, &r)
 }
