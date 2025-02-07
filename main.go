@@ -1,23 +1,21 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-type Resource struct {
-	Id int
-}
-
-func (r Resource) Close() {
-	fmt.Printf("Closing %v\n", r)
+// fibonacci is a function that returns
+// a function that returns an int.
+func fibonacci() func() int {
+	current, next := 0, 1
+	return func() int {
+		r := current
+		current, next = next, current+next
+		return r
+	}
 }
 
 func main() {
-	var r *Resource
-	defer func() {
-		if r != nil {
-			r.Close()
-		}
-	}()
-	r = &Resource{42}
+	f := fibonacci()
+	for i := 0; i < 10; i++ {
+		fmt.Println(f())
+	}
 }
