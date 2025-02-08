@@ -13,4 +13,16 @@ func main() {
 	s3 := s2[1:5]
 	fmt.Printf("s3=    %v\n", s3)
 	fmt.Printf("len(s3)=%d, cap(s3)=%d\n", len(s3), cap(s3))
+	b := new([10]int)
+	for i := 0; i < len(b); i++ {
+		b[i] = i
+	}
+	fmt.Printf("b=%v\n", b)
+	d := [6]int{6, 5, 4, 3, 2, 1}
+	fmt.Printf("d= %v\n", d)
+	d = a
+	fmt.Printf("d= %v\n", d)
+	d[0] = 7
+	fmt.Printf("d= %v\n", d)
+	fmt.Printf("a= %v\n", a)
 }
