@@ -11,7 +11,7 @@ type ProducerId string
 func produce(id ProducerId, n int, c chan int) {
 	fmt.Printf("Started producer: %v\n", id)
 	for i := 0; i < n; i++ {
-		c <- rand.Intn(n)
+		c <- i
 		time.Sleep(time.Duration(rand.Intn(500-10)+10) * time.Millisecond)
 	}
 	close(c)
@@ -50,7 +50,7 @@ const producer2 ProducerId = "2"
 func main() {
 	c1 := make(chan int)
 	c2 := make(chan int)
-	go produce(producer1, 10, c1)
-	go produce(producer2, 10, c2)
+	go produce(producer1, 100, c1)
+	go produce(producer2, 100, c2)
 	consume(producer1, producer2, c1, c2)
 }
