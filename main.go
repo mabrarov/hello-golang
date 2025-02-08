@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
-	"time"
 )
 
 type CountDownLatch struct {
@@ -98,7 +96,6 @@ type fakeResult struct {
 }
 
 func (f fakeFetcher) Fetch(url string) (string, []string, error) {
-	time.Sleep(time.Duration(rand.Intn(500-10)+10) * time.Millisecond)
 	if res, ok := f[url]; ok {
 		return res.body, res.urls, nil
 	}
