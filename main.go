@@ -33,21 +33,6 @@ func (c *CountDownLatch) Wait() {
 	c.cond.L.Unlock()
 }
 
-func (c *CountDownLatch) CountDownAndWait() {
-	c.cond.L.Lock()
-	if c.value > 0 {
-		c.value--
-	}
-	if c.value == 0 {
-		c.cond.Broadcast()
-	} else {
-		for c.value > 0 {
-			c.cond.Wait()
-		}
-	}
-	c.cond.L.Unlock()
-}
-
 type FetchCache struct {
 	mu    sync.Mutex
 	cache map[string]bool
