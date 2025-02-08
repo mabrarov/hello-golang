@@ -1,30 +1,16 @@
 package main
 
-import (
-	"golang.org/x/tour/pic"
-	"image"
-	"image/color"
-	"math"
-)
-
-type Image struct {
-	W, H int
-}
-
-func (i Image) ColorModel() color.Model {
-	return color.RGBAModel
-}
-
-func (i Image) Bounds() image.Rectangle {
-	return image.Rect(0, 0, i.W, i.H)
-}
-
-func (i Image) At(x, y int) color.Color {
-	v := uint8((x + y) % math.MaxUint8)
-	return color.RGBA{R: v, G: v, B: 255, A: 255}
-}
+import "fmt"
 
 func main() {
-	m := Image{10, 10}
-	pic.ShowImage(m)
+	a := [6]int{1, 2, 3, 4, 5, 6}
+	fmt.Printf("a =%v\n", a)
+	s1 := a[:]
+	fmt.Printf("s1=%v\n", s1)
+	s2 := a[1:4]
+	fmt.Printf("s2=  %v\n", s2)
+	fmt.Printf("len(s2)=%d, cap(s2)=%d\n", len(s2), cap(s2))
+	s3 := s2[1:5]
+	fmt.Printf("s3=    %v\n", s3)
+	fmt.Printf("len(s3)=%d, cap(s3)=%d\n", len(s3), cap(s3))
 }
