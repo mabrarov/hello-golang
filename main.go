@@ -20,34 +20,28 @@ func produce(id ProducerId, n int, c chan int) {
 
 func consume(id1, id2 ProducerId, c1, c2 chan int) {
 	fmt.Println("Started consumer")
-	for completed1, completed2 := false, false; !completed1 || !completed2; {
-		switch {
-		case !completed1 && !completed2:
-			select {
-			case v, ok := <-c1:
-				if ok {
-					fmt.Printf("Received from producer %v: %d\n", id1, v)
-				}
-				completed1 = !ok
-			case v, ok := <-c2:
-				if ok {
-					fmt.Printf("Received from producer %v: %d\n", id2, v)
-				}
-				completed2 = !ok
-			}
-		case !completed1:
-			v, ok := <-c1
+	var c3 chan int
+	var id3 ProducerId
+	for c3 == nil {
+		select {
+		case v, ok := <-c1:
 			if ok {
 				fmt.Printf("Received from producer %v: %d\n", id1, v)
+			} else {
+				c3 = c2
+				id3 = id2
 			}
-			completed1 = !ok
-		case !completed2:
-			v, ok := <-c2
+		case v, ok := <-c2:
 			if ok {
 				fmt.Printf("Received from producer %v: %d\n", id2, v)
+			} else {
+				c3 = c1
+				id3 = id1
 			}
-			completed2 = !ok
 		}
+	}
+	for v := range c3 {
+		fmt.Printf("Received from producer %v: %d\n", id3, v)
 	}
 	fmt.Println("Completed consumer")
 }
