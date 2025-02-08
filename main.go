@@ -20,28 +20,26 @@ func produce(id ProducerId, n int, c chan int) {
 
 func consume(id1, id2 ProducerId, c1, c2 chan int) {
 	fmt.Println("Started consumer")
-	var c3 chan int
-	var id3 ProducerId
-	for c3 == nil {
+	for s := true; s; {
 		select {
 		case v, ok := <-c1:
 			if ok {
 				fmt.Printf("Received from producer %v: %d\n", id1, v)
 			} else {
-				c3 = c2
-				id3 = id2
+				s = false
 			}
 		case v, ok := <-c2:
 			if ok {
 				fmt.Printf("Received from producer %v: %d\n", id2, v)
 			} else {
-				c3 = c1
-				id3 = id1
+				c2 = c1
+				id2 = id1
+				s = false
 			}
 		}
 	}
-	for v := range c3 {
-		fmt.Printf("Received from producer %v: %d\n", id3, v)
+	for v := range c2 {
+		fmt.Printf("Received from producer %v: %d\n", id2, v)
 	}
 	fmt.Println("Completed consumer")
 }
