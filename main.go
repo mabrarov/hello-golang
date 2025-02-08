@@ -2,53 +2,151 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/tour/tree"
+	"sync"
 )
 
-func walk(t *tree.Tree, f func(v int)) {
-	if t == nil {
-		return
+type CountDownLatch struct {
+	cond  *sync.Cond
+	value int
+}
+
+func NewCountDownLatch(value int) *CountDownLatch {
+	return &CountDownLatch{cond: sync.NewCond(&sync.Mutex{}), value: value}
+}
+
+func (c *CountDownLatch) CountDown() {
+	c.cond.L.Lock()
+	if c.value > 0 {
+		c.value--
 	}
-	walk(t.Left, f)
-	f(t.Value)
-	walk(t.Right, f)
+	if c.value == 0 {
+		c.cond.Broadcast()
+	}
+	c.cond.L.Unlock()
 }
 
-// Walk walks the tree t sending all values
-// from the tree to the channel ch.
-func Walk(t *tree.Tree, ch chan int) {
-	walk(t.Left, func(v int) { ch <- v })
-	close(ch)
+func (c *CountDownLatch) Wait() {
+	c.cond.L.Lock()
+	for c.value > 0 {
+		c.cond.Wait()
+	}
+	c.cond.L.Unlock()
 }
 
-// Same determines whether the trees
-// t1 and t2 contain the same values.
-func Same(t1, t2 *tree.Tree) bool {
-	ch1 := make(chan int, 10)
-	ch2 := make(chan int, 10)
-	go Walk(t1, ch1)
-	go Walk(t2, ch2)
-	for done := false; !done; {
-		v1, ok1 := <-ch1
-		v2, ok2 := <-ch2
-		if ok1 != ok2 || v1 != v2 {
-			return false
+func (c *CountDownLatch) CountDownAndWait() {
+	c.cond.L.Lock()
+	if c.value > 0 {
+		c.value--
+	}
+	if c.value == 0 {
+		c.cond.Broadcast()
+	} else {
+		for c.value > 0 {
+			c.cond.Wait()
 		}
-		done = !ok1 && !ok2
 	}
+	c.cond.L.Unlock()
+}
+
+type FetchCache struct {
+	mu    sync.Mutex
+	cache map[string]bool
+}
+
+func (c *FetchCache) TryPut(value string) bool {
+	c.mu.Lock()
+	if c.cache[value] {
+		c.mu.Unlock()
+		return false
+	}
+	c.cache[value] = true
+	c.mu.Unlock()
 	return true
 }
 
-func printTree(t *tree.Tree) {
-	walk(t.Left, func(v int) { fmt.Println(v) })
+var urlCache = FetchCache{cache: make(map[string]bool)}
+
+type Fetcher interface {
+	// Fetch returns the body of URL and
+	// a slice of URLs found on that page.
+	Fetch(url string) (body string, urls []string, err error)
+}
+
+// Crawl uses fetcher to recursively crawl
+// pages starting with url, to a maximum of depth.
+func Crawl(url string, depth int, fetcher Fetcher) {
+	if depth <= 0 {
+		return
+	}
+	if !urlCache.TryPut(url) {
+		return
+	}
+	body, urls, err := fetcher.Fetch(url)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	latch := NewCountDownLatch(len(urls))
+	for _, u := range urls {
+		go func() {
+			Crawl(u, depth-1, fetcher)
+			latch.CountDown()
+		}()
+	}
+	fmt.Printf("found: %s %q\n", url, body)
+	latch.Wait()
+	return
 }
 
 func main() {
-	t1 := tree.New(1)
-	t2 := tree.New(1)
-	fmt.Println("Tree #1:")
-	printTree(t1)
-	fmt.Println("Tree #2:")
-	printTree(t2)
-	fmt.Println("Tree #1 is same as #2:", Same(t1, t2))
+	Crawl("https://golang.org/", 4, fetcher)
+}
+
+// fakeFetcher is Fetcher that returns canned results.
+type fakeFetcher map[string]*fakeResult
+
+type fakeResult struct {
+	body string
+	urls []string
+}
+
+func (f fakeFetcher) Fetch(url string) (string, []string, error) {
+	if res, ok := f[url]; ok {
+		return res.body, res.urls, nil
+	}
+	return "", nil, fmt.Errorf("not found: %s", url)
+}
+
+// fetcher is a populated fakeFetcher.
+var fetcher = fakeFetcher{
+	"https://golang.org/": &fakeResult{
+		"The Go Programming Language",
+		[]string{
+			"https://golang.org/pkg/",
+			"https://golang.org/cmd/",
+		},
+	},
+	"https://golang.org/pkg/": &fakeResult{
+		"Packages",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/cmd/",
+			"https://golang.org/pkg/fmt/",
+			"https://golang.org/pkg/os/",
+		},
+	},
+	"https://golang.org/pkg/fmt/": &fakeResult{
+		"Package fmt",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/pkg/",
+		},
+	},
+	"https://golang.org/pkg/os/": &fakeResult{
+		"Package os",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/pkg/",
+		},
+	},
 }
