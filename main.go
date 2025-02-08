@@ -2,55 +2,53 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
+	"golang.org/x/tour/tree"
 )
 
-type ProducerId string
-
-func produce(id ProducerId, n int, c chan int) {
-	fmt.Printf("Started producer: %v\n", id)
-	for i := 0; i < n; i++ {
-		c <- i
-		time.Sleep(time.Duration(rand.Intn(500-10)+10) * time.Millisecond)
+func walk(t *tree.Tree, f func(v int)) {
+	if t == nil {
+		return
 	}
-	close(c)
-	fmt.Printf("Completed producer: %v\n", id)
+	walk(t.Left, f)
+	f(t.Value)
+	walk(t.Right, f)
 }
 
-func consume(id1, id2 ProducerId, c1, c2 chan int) {
-	fmt.Println("Started consumer")
-	for s := true; s; {
-		select {
-		case v, ok := <-c1:
-			if ok {
-				fmt.Printf("Received from producer %v: %d\n", id1, v)
-			} else {
-				s = false
-			}
-		case v, ok := <-c2:
-			if ok {
-				fmt.Printf("Received from producer %v: %d\n", id2, v)
-			} else {
-				c2 = c1
-				id2 = id1
-				s = false
-			}
+// Walk walks the tree t sending all values
+// from the tree to the channel ch.
+func Walk(t *tree.Tree, ch chan int) {
+	walk(t.Left, func(v int) { ch <- v })
+	close(ch)
+}
+
+// Same determines whether the trees
+// t1 and t2 contain the same values.
+func Same(t1, t2 *tree.Tree) bool {
+	ch1 := make(chan int, 10)
+	ch2 := make(chan int, 10)
+	go Walk(t1, ch1)
+	go Walk(t2, ch2)
+	for done := false; !done; {
+		v1, ok1 := <-ch1
+		v2, ok2 := <-ch2
+		if ok1 != ok2 || v1 != v2 {
+			return false
 		}
+		done = !ok1 && !ok2
 	}
-	for v := range c2 {
-		fmt.Printf("Received from producer %v: %d\n", id2, v)
-	}
-	fmt.Println("Completed consumer")
+	return true
 }
 
-const producer1 ProducerId = "1"
-const producer2 ProducerId = "2"
+func printTree(t *tree.Tree) {
+	walk(t.Left, func(v int) { fmt.Println(v) })
+}
 
 func main() {
-	c1 := make(chan int)
-	c2 := make(chan int)
-	go produce(producer1, 100, c1)
-	go produce(producer2, 100, c2)
-	consume(producer1, producer2, c1, c2)
+	t1 := tree.New(1)
+	t2 := tree.New(1)
+	fmt.Println("Tree #1:")
+	printTree(t1)
+	fmt.Println("Tree #2:")
+	printTree(t2)
+	fmt.Println("Tree #1 is same as #2:", Same(t1, t2))
 }
