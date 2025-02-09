@@ -13,7 +13,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.LUTC | log.Lshortfile | log.Lmsgprefix)
 
 	// Get a greeting message and print it.
-	message, err := greetings.Hello("Gladys")
+	messages, err := greetings.Hellos("Gladys", "Samantha", "Darrin")
 	// If an error was returned, print it to the console and
 	// exit the program.
 	if err != nil {
@@ -22,5 +22,7 @@ func main() {
 
 	// If no error was returned, print the returned message
 	// to the console.
-	fmt.Println(message)
+	for _, message := range messages {
+		fmt.Println(message)
+	}
 }
