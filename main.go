@@ -19,27 +19,33 @@ func produce(id ProducerId, n int, c chan int) {
 }
 
 func consume(id1, id2 ProducerId, c1, c2 chan int) {
+	f1 := func(v int) {
+		fmt.Printf("Received from producer %v: %d\n", id1, v)
+	}
+	f2 := func(v int) {
+		fmt.Printf("Received from producer %v: %d\n", id2, v)
+	}
+	var c3 chan int
+	var f3 func(v int)
 	fmt.Println("Started consumer")
 	for s := true; s; {
 		select {
 		case v, ok := <-c1:
 			if ok {
-				fmt.Printf("Received from producer %v: %d\n", id1, v)
+				f1(v)
 			} else {
-				s = false
+				c3, f3, s = c2, f2, false
 			}
 		case v, ok := <-c2:
 			if ok {
-				fmt.Printf("Received from producer %v: %d\n", id2, v)
+				f2(v)
 			} else {
-				c2 = c1
-				id2 = id1
-				s = false
+				c3, f3, s = c1, f1, false
 			}
 		}
 	}
-	for v := range c2 {
-		fmt.Printf("Received from producer %v: %d\n", id2, v)
+	for v := range c3 {
+		f3(v)
 	}
 	fmt.Println("Completed consumer")
 }
