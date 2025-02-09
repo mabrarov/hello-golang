@@ -50,10 +50,9 @@ func consume(id1, id2 ProducerId, c1, c2 chan int) {
 	fmt.Println("Completed consumer")
 }
 
-const producer1 ProducerId = "1"
-const producer2 ProducerId = "2"
-
 func main() {
+	const producer1 ProducerId = "1"
+	const producer2 ProducerId = "2"
 	c1 := make(chan int)
 	c2 := make(chan int)
 	go produce(producer1, 100, c1)
