@@ -5,30 +5,6 @@ import (
 	"sync"
 )
 
-type CountDownLatch struct {
-	cond  *sync.Cond
-	value int
-}
-
-func NewCountDownLatch(value int) *CountDownLatch {
-	return &CountDownLatch{cond: sync.NewCond(&sync.Mutex{}), value: value}
-}
-
-func (c *CountDownLatch) CountDownAndWait() {
-	c.cond.L.Lock()
-	if c.value > 0 {
-		c.value--
-	}
-	if c.value == 0 {
-		c.cond.Broadcast()
-	} else {
-		for c.value > 0 {
-			c.cond.Wait()
-		}
-	}
-	c.cond.L.Unlock()
-}
-
 type ProducerId string
 
 func produce(id ProducerId, n int, c chan int) {
@@ -74,13 +50,16 @@ func main() {
 	const producer2 ProducerId = "2"
 	c1 := make(chan int, 10)
 	c2 := make(chan int, 10)
-	sg := NewCountDownLatch(2)
+	var sg sync.WaitGroup
+	sg.Add(2)
 	go func() {
-		sg.CountDownAndWait()
+		sg.Done()
+		sg.Wait()
 		produce(producer1, 100, c1)
 	}()
 	go func() {
-		sg.CountDownAndWait()
+		sg.Done()
+		sg.Wait()
 		produce(producer2, 100, c2)
 	}()
 	consume(producer1, producer2, c1, c2)
