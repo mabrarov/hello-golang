@@ -5,34 +5,6 @@ import (
 	"sync"
 )
 
-type CountDownLatch struct {
-	cond  *sync.Cond
-	value int
-}
-
-func NewCountDownLatch(value int) *CountDownLatch {
-	return &CountDownLatch{cond: sync.NewCond(&sync.Mutex{}), value: value}
-}
-
-func (c *CountDownLatch) CountDown() {
-	c.cond.L.Lock()
-	if c.value > 0 {
-		c.value--
-	}
-	if c.value == 0 {
-		c.cond.Broadcast()
-	}
-	c.cond.L.Unlock()
-}
-
-func (c *CountDownLatch) Wait() {
-	c.cond.L.Lock()
-	for c.value > 0 {
-		c.cond.Wait()
-	}
-	c.cond.L.Unlock()
-}
-
 type FetchCache struct {
 	mu    sync.Mutex
 	cache map[string]bool
@@ -71,15 +43,16 @@ func Crawl(url string, depth int, fetcher Fetcher) {
 		fmt.Println(err)
 		return
 	}
-	latch := NewCountDownLatch(len(urls))
+	var w sync.WaitGroup
+	w.Add(len(urls))
 	for _, u := range urls {
 		go func() {
 			Crawl(u, depth-1, fetcher)
-			latch.CountDown()
+			w.Done()
 		}()
 	}
 	fmt.Printf("found: %s %q\n", url, body)
-	latch.Wait()
+	w.Wait()
 	return
 }
 
