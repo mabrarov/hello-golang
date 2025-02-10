@@ -1,9 +1,10 @@
 package main
 
 import (
-	"example.com/greetings"
 	"fmt"
+	"github.com/mabrarov/hello-golang/greetings"
 	"log"
+	"rsc.io/quote"
 )
 
 func main() {
@@ -25,4 +26,5 @@ func main() {
 	for _, message := range messages {
 		fmt.Println(message)
 	}
+	fmt.Println(quote.Go())
 }
