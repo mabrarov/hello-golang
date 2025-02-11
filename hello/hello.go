@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mabrarov/hello-golang/greetings"
+	"github.com/mabrarov/hello-golang/greetings/nested/pkg"
 	"log"
 	"rsc.io/quote"
 )
