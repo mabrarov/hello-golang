@@ -1,4 +1,4 @@
-package greetings
+package mypkg
 
 import (
 	"errors"
