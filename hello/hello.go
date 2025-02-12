@@ -14,7 +14,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.LUTC | log.Lshortfile | log.Lmsgprefix)
 
 	// Get a greeting message and print it.
-	messages, err := mypkg.Hellos("Gladys", "Samantha", "Darrin")
+	messages, err := greetings.Hellos("Gladys", "Samantha", "Darrin")
 	// If an error was returned, print it to the console and
 	// exit the program.
 	if err != nil {
