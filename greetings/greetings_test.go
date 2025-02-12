@@ -1,7 +1,6 @@
-package greetings_test
+package greetings
 
 import (
-	"github.com/mabrarov/hello-golang/greetings"
 	"regexp"
 	"testing"
 )
@@ -11,7 +10,7 @@ import (
 func TestHelloName(t *testing.T) {
 	name := "Gladys"
 	want := regexp.MustCompile(`\b` + name + `\b`)
-	msg, err := greetings.Hello("Gladys")
+	msg, err := Hello("Gladys")
 	if !want.MatchString(msg) || err != nil {
 		t.Fatalf(`Hello("Gladys") = %q, %v, want match for %#q, nil`, msg, err, want)
 	}
@@ -20,21 +19,21 @@ func TestHelloName(t *testing.T) {
 // TestHelloEmpty calls greetings.Hello with an empty string,
 // checking for an error.
 func TestHelloEmpty(t *testing.T) {
-	msg, err := greetings.Hello("")
+	msg, err := Hello("")
 	if msg != "" || err == nil {
 		t.Fatalf(`Hello("") = %q, %v, want "", error`, msg, err)
 	}
 }
 
 func TestHellosWithoutNames(t *testing.T) {
-	msg, err := greetings.Hellos()
+	msg, err := Hellos()
 	if len(msg) > 0 || err != nil {
 		t.Fatalf(`Hellos() = %q, %v, want [], nil`, msg, err)
 	}
 }
 
 func TestHellosEmptyName(t *testing.T) {
-	msg, err := greetings.Hellos("")
+	msg, err := Hellos("")
 	if len(msg) > 0 || err == nil {
 		t.Fatalf(`Hellos("") = %q, %v, want [], error`, msg, err)
 	}
@@ -42,7 +41,7 @@ func TestHellosEmptyName(t *testing.T) {
 
 func TestHellosMultipleNames(t *testing.T) {
 	names := []string{"One", "Two", "Free"}
-	msg, err := greetings.Hellos(names...)
+	msg, err := Hellos(names...)
 	if len(msg) != 3 || err != nil {
 		t.Fatalf(`Hellos("") = %q, %v, want [3]string, nil`, msg, err)
 	}
