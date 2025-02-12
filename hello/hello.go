@@ -1,8 +1,8 @@
 package main
 
 import (
-	"example.com/greetings"
 	"fmt"
+	"github.com/mabrarov/hello-golang/greetings"
 	"log"
 )
 
