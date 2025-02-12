@@ -1,4 +1,4 @@
-package greetings_test
+package test
 
 import (
 	"github.com/mabrarov/hello-golang/greetings"
