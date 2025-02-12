@@ -2,7 +2,7 @@ module github.com/mabrarov/hello-golang/hello
 
 go 1.23.2
 
-replace github.com/mabrarov/hello-golang/greetings => gitlab.c2g.pw/mabrarov/hello-golang/greetings v0.0.0-20250211145740-6ace91b1af91
+replace github.com/mabrarov/hello-golang/greetings => ../greetings
 
 require (
 	github.com/mabrarov/hello-golang/greetings v0.0.0-00010101000000-000000000000
