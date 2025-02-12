@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mabrarov/hello-golang/greetings"
+	"github.com/mabrarov/hello-golang/hello/internal/greetings"
 	"log"
 	"rsc.io/quote"
 )
@@ -14,7 +14,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.LUTC | log.Lshortfile | log.Lmsgprefix)
 
 	// Get a greeting message and print it.
-	messages, err := greetings.Hellos("Gladys", "Samantha", "Darrin")
+	messages, err := greetings.GenGreetings()
 	// If an error was returned, print it to the console and
 	// exit the program.
 	if err != nil {
