@@ -5,10 +5,11 @@ import (
 )
 
 type CustomChannel[T any] struct {
-	cond   *sync.Cond
-	value  T
-	ready  bool
-	closed bool
+	cond    *sync.Cond
+	value   T
+	senders uint
+	ready   bool
+	closed  bool
 }
 
 func NewCustomChannel[T any]() *CustomChannel[T] {
@@ -23,9 +24,11 @@ func (ch *CustomChannel[T]) Send(value T) {
 		panic("channel already closed")
 	}
 
+	ch.senders++
 	for ch.ready {
 		ch.cond.Wait()
 	}
+	ch.senders--
 
 	ch.value = value
 	ch.ready = true
@@ -40,7 +43,7 @@ func (ch *CustomChannel[T]) Receive() (value T, ok bool) {
 	ch.cond.L.Lock()
 	defer ch.cond.L.Unlock()
 
-	for !ch.ready && !ch.closed {
+	for !ch.ready && !(ch.closed && ch.senders == 0) {
 		ch.cond.Wait()
 	}
 
