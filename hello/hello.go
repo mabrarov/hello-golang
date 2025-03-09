@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/mabrarov/hello-golang/greetings"
 	"log"
+
+	"github.com/mabrarov/hello-golang/greetings"
 )
 
 func main() {
