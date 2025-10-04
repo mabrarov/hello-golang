@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 	"weak"
+
+	"github.com/samber/lo"
 )
 
 func main() {
@@ -14,7 +16,7 @@ func main() {
 			Name: "hello",
 			Age:  20,
 		}
-		p = &obj.Age
+		p = lo.ToPtr(obj.Age)
 		t = weak.Make(obj)
 		obj = nil
 		runtime.GC()
