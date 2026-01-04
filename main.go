@@ -7,7 +7,7 @@ import (
 
 type ProducerId string
 
-func produce(id ProducerId, n int, c chan int) {
+func produce(id ProducerId, n int, c chan<- int) {
 	fmt.Printf("Started producer: %v\n", id)
 	for i := 0; i < n; i++ {
 		c <- i
@@ -16,7 +16,7 @@ func produce(id ProducerId, n int, c chan int) {
 	fmt.Printf("Completed producer: %v\n", id)
 }
 
-func consume(id1, id2 ProducerId, c1, c2 chan int) {
+func consume(id1, id2 ProducerId, c1, c2 <-chan int) {
 	fmt.Println("Started consumer")
 	for c1 != nil || c2 != nil {
 		select {
