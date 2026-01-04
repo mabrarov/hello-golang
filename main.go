@@ -17,28 +17,20 @@ func produce(id ProducerId, n int, c chan int) {
 }
 
 func consume(id1, id2 ProducerId, c1, c2 chan int) {
-	f1 := func(v int) {
-		fmt.Printf("Received from producer %v: %d\n", id1, v)
-	}
-	f2 := func(v int) {
-		fmt.Printf("Received from producer %v: %d\n", id2, v)
-	}
 	fmt.Println("Started consumer")
-	for count := 0; count < 2; {
+	for c1 != nil || c2 != nil {
 		select {
 		case v, ok := <-c1:
 			if ok {
-				f1(v)
+				fmt.Printf("Received from producer %v: %d\n", id1, v)
 			} else {
-				c1, f1 = c2, f2
-				count++
+				c1 = nil
 			}
 		case v, ok := <-c2:
 			if ok {
-				f2(v)
+				fmt.Printf("Received from producer %v: %d\n", id2, v)
 			} else {
-				c2, f2 = c1, f1
-				count++
+				c2 = nil
 			}
 		}
 	}
