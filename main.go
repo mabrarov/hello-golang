@@ -1,38 +1,13 @@
 package main
 
-import (
-	"fmt"
-	"runtime"
-	"weak"
-
-	"github.com/samber/lo"
-)
+import "fmt"
 
 func main() {
-	var t weak.Pointer[Obj]
-	var p *int
-	{
-		obj := &Obj{
-			Name: "hello",
-			Age:  20,
-		}
-		p = lo.ToPtr(obj.Age)
-		t = weak.Make(obj)
-		obj = nil
-		runtime.GC()
+	m := map[int]string{
+		0: "zero",
+		1: "one",
+		2: "two",
 	}
-
-	fmt.Printf("Pointer to struct member: %p -> %v\n", p, *p)
-
-	obj := t.Value()
-	if obj == nil {
-		fmt.Printf("Pointer to struct: %p\n", obj)
-	} else {
-		fmt.Printf("Pointer to struct: %p -> %+v\n", obj, *obj)
-	}
-}
-
-type Obj struct {
-	Name string
-	Age  int
+	p := m[1]
+	fmt.Println(p)
 }
